@@ -1,7 +1,135 @@
+<!DOCTYPE html>
 <html>
 <head>
-    <script src="jquery-2.2.1.min.js"> </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+        
+    <title>S3 File Upload</title>
+    
+    <script src="scripts/jquery-2.2.1.min.js"></script>
+    <script src="scripts/Ply.js"></script>
+    <script src="scripts/md5.js"></script>
+    <script src="scripts/uaSpoofing.js"></script>
+    <script src="scripts/script.js"></script>
+    
     <script>
+        var user = null;
+        
+        var startUp = function() {
+            spoofUserAgent();
+            showLogin();
+        }
+    
+        var showLogin = function() {
+            Ply.dialog("prompt", {
+                title: "Login",
+                form: {
+                    email: "Email",
+                    password: {hint: "Password", type: "password"}
+                }
+            })
+            .then((ui) => {
+                var data = ui.data;
+
+                //Get email and password
+                var tempUser = data.email;
+                var password = hex_md5(data.password);
+
+                if (tempUser.length > 0 && password.length > 0) {
+                    var url = "./login?user=" + tempUser + "&password=" + password;
+
+                    loadURL(url, function(data) {
+                        var res = data;
+
+                        if (res == "1") {
+                            user = tempUser;
+                            login();
+                        }
+                        else {
+                            Ply.dialog("alert", "Invalid email or password")
+                            .then((ui) => {
+                                showLogin();
+                            })
+                            .catch((ui) => {
+                                //Pressed cancel
+                            });
+                        }
+                    });
+                }
+            })
+            .catch((ui) => {
+                //Pressed cancel
+            });
+        }
+    
+        var showSignUp = function() {
+            Ply.dialog("prompt", {
+                title: "Sign Up",
+                form: {
+                    email: "Email",
+                    password: {hint: "Password", type: "password"}
+                }
+            })
+            .then((ui) => {
+                var data = ui.data;
+
+                //Get email and password
+                var tempUser = data.email;
+                var password = hex_md5(data.password);
+
+                if (tempUser.length > 0 && password.length > 0) {
+                    var url = "./createUser?user=" + tempUser + "&password=" + password;
+
+                    loadURL(url, function(data) {
+                        var res = data;
+
+                        if (res == "1") {
+                            user = tempUser;
+                            login();
+                        }
+                        else {
+                            Ply.dialog("alert", "Email already in use")
+                            .then((ui) => {
+                                showSignUp();
+                            })
+                            .catch((ui) => {
+                                //Pressed cancel
+                            });
+                        }
+                    });
+                }
+            })
+            .catch((ui) => {
+                //Pressed cancel
+            });
+        }
+    
+        var login = function() {
+            if (user != null) {
+                //Display user in top right corner
+                document.getElementById("username").innerHTML = user;
+                
+                //Change login button to logout
+                document.getElementById("loginButton").innerHTML = "Logout";
+                document.getElementById("loginButton").href = "javascript:logout()";
+                
+                //Hide sign up button
+                document.getElementById("signUpButton").style.display = "none";
+            }
+        }
+    
+        var logout = function() {
+            //Clear out user
+            user = null;
+            document.getElementById("username").innerHTML = "";
+            
+            //Change logout button to login
+            document.getElementById("loginButton").innerHTML = "Login";
+            document.getElementById("loginButton").href = "javascript:showLogin()";
+            
+            //Show sign up button
+            document.getElementById("signUpButton").style.display = "";
+        }
+    
         var fileUploaded = function() {
             var file = $("#fileUploader").get(0);
             var FR = new FileReader();
@@ -35,9 +163,73 @@
             FR.readAsDataURL(file.files[0]);
         }
     </script>
+    
+    <link rel="stylesheet" href="css/ply.css" type="text/css" />
+    
+    <style>
+        html, body {
+            height: 100%;
+        }
+    
+        body {
+            background-color: #F0F0F0;
+            font-family: "Verdana";
+            font-size: 12px;
+            text-align: center;
+        }
+        
+        .header {
+            display: table;
+            height: 15%;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .content {
+            height: 75%;
+            padding: 20px;
+            overflow: auto;
+            background-color: white;
+            border: 1px solid;
+            border-radius: 5px;
+            border-color: #D0D0D0;
+        }
+        
+        .centeredButton {
+            text-align: center;
+        }
+        
+        .button {
+            padding: 5px;
+            background-color: #F0F0F0;
+            color: black;
+            border: 1px solid;
+            border-radius: 5px;
+            border-color: #D0D0D0;
+            text-decoration: none;
+        }
+        
+        #loginBar {
+            height: 15px;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid;
+            border-radius: 5px;
+            border-color: #D0D0D0;
+        }
+        
+        #username {
+            float: right;
+            padding-right: 10px;
+        }
+    </style>
 </head>
-
-<body>
+<body onload="startUp()">
+    <div id="loginBar">
+        <div style="float: left;"><a id="signUpButton" href="javascript:showSignUp()" class="button">Sign Up</a></div>
+        <div style="float: right;"><a id="loginButton" href="javascript:showLogin()" class="button">Login</a></div>
+        <div id="username"></div>
+    </div>
     <input type="file" id="fileUploader" onchange="fileUploaded()">
 </body>
 </html>
