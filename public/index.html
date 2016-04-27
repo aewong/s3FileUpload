@@ -118,6 +118,9 @@
                 // Hide sign up button
                 document.getElementById("signUpButton").style.display = "none";
                 
+                // Show file uploader
+                document.getElementById("fileUploader").style.display = "";
+                
                 loadFiles();
             }
         }
@@ -134,11 +137,14 @@
             // Show sign up button
             document.getElementById("signUpButton").style.display = "";
             
-            document.getElementById("fileList").innerHTML = "Login or sign up to view your files!";
+            // Hide file uploader
+            document.getElementById("fileUploader").style.display = "none";
+            
+            document.getElementById("fileList").innerHTML = "<div id='message'>Login or sign up to view your files!</div>";
         }
     
         var loadFiles = function() {
-            $("#fileUploader").val(""); // Reset file input
+            $("#fileUploader").val(""); // Reset file uploader
             
             var url = "./listFiles?user=" + user;
             
@@ -148,7 +154,7 @@
                 allFiles = files;
                 
                 if (files.length == 0) {
-                    document.getElementById("fileList").innerHTML = "No files";
+                    document.getElementById("fileList").innerHTML = "<div id='message'>No files found.</div>";
                 }
                 else {
                     var markUp = ""; // Each file will be a list item
@@ -156,12 +162,12 @@
                     for (var i = 0; i < files.length; i++) {
                         var file = files[i];
                         
-                        markUp += "<div class='content'>";
-                        markUp += "<div class='fileInfo' style='float: left;'><div class='fileName'><b>" + file.name + "</b></div></br>"
-                        markUp += "<div class='fileDate'><b>Date Uploaded:</b> " + file.date + "</div>"
-                        markUp += "<div class='fileLink'><b>Link:</b> " + "file.link" + "</div></div>"
-                        markUp += "<a href='javascript:deleteFile(" + i + ")' class='button' style='float: right;'>Delete</a>"
-                        markUp += "</div>";
+                        markUp += "<div class='content'><div class='content-table'>";
+                        markUp += "<div><div class='fileName'>" + file.name + "</div></br>"
+                        markUp += "<div><b>Date Uploaded:</b> " + file.date + "</div>"
+                        markUp += "<div><b>Link:</b> " + "file.link" + "</div></div>"
+                        markUp += "<div class='fileDeleteWrapper'><a href='javascript:deleteFile(" + i + ")' class='button'>Delete</a></div>"
+                        markUp += "</div></div>";
                     }
                     
                     document.getElementById("fileList").innerHTML = markUp;
@@ -204,7 +210,7 @@
         }
     
         var addFile = function(link, name) {
-            var date = moment().format("MMMM Do YYYY, h:mm:ss a");
+            var date = moment().format("MMMM Do YYYY h:mm:ss a");
             
             var url = "./addFile?user=" + user + "&link=" + link + "&name=" + name + "&date=" + date;
             
@@ -253,12 +259,18 @@
         .content {
             height: 75%;
             padding: 10px;
+            margin-bottom: 10px;
             overflow: auto;
             background-color: white;
             border: 1px solid;
             border-radius: 5px;
             border-color: #D0D0D0;
             text-align: left;
+        }
+    
+        .content-table {
+            width: 100%;
+            display: table;
         }
     
         .button {
@@ -270,7 +282,18 @@
             border-color: #D0D0D0;
             text-decoration: none;
         }
-        
+    
+        .fileName {
+            font-weight: bold;
+            font-size: 16px;
+        }
+    
+        .fileDeleteWrapper {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: right;'
+        }
+    
         #loginBar {
             height: 15px;
             padding: 10px;
@@ -283,6 +306,16 @@
         #username {
             float: right;
             padding-right: 10px;
+            font-weight: bold;
+        }
+    
+        #fileUploader {
+            padding: 20px;
+        }
+    
+        #message {
+            font-weight: bold;
+            font-size: 16px;
         }
     </style>
 </head>
@@ -292,7 +325,8 @@
         <div style="float: right;"><a id="loginButton" href="javascript:showLogin()" class="button">Login</a></div>
         <div id="username"></div>
     </div>
-    <input type="file" id="fileUploader" onchange="fileUploaded()">
-    <div id="fileList">Login or sign up to view your files!</div>
+    <input type="file" id="fileUploader" onchange="fileUploaded()" style="display: none;">
+    </br></br>
+    <div id="fileList"><div id="message">Login or sign up to view your files!</div></div>
 </body>
 </html>
