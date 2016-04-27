@@ -118,8 +118,9 @@
                 // Hide sign up button
                 document.getElementById("signUpButton").style.display = "none";
                 
-                // Show file uploader
+                // Show file uploader and sort menu
                 document.getElementById("fileUploader").style.display = "";
+                document.getElementById("sortMenu").style.display = "";
                 
                 loadFiles();
             }
@@ -137,8 +138,9 @@
             // Show sign up button
             document.getElementById("signUpButton").style.display = "";
             
-            // Hide file uploader and file list
+            // Hide file uploader, sort menu, and file list
             document.getElementById("fileUploader").style.display = "none";
+            document.getElementById("sortMenu").style.display = "none";
             document.getElementById("fileList").innerHTML = "<div id='message'>Login or sign up to view your files!</div>";
         }
     
@@ -150,16 +152,16 @@
             loadURL(url, function(data) {
                 var files = JSON.parse(data);
                 
-                allFiles = files;
-                
-                if (files.length == 0) {
+                allFiles = sortFiles(files);
+                    
+                if (allFiles.length == 0) {
                     document.getElementById("fileList").innerHTML = "<div id='message'>No files found.</div>";
                 }
                 else {
                     var markUp = "";
                     
-                    for (var i = 0; i < files.length; i++) {
-                        var file = files[i];
+                    for (var i = 0; i < allFiles.length; i++) {
+                        var file = allFiles[i];
                         
                         markUp += "<div class='content'><div class='content-table'>";
                         markUp += "<div><div class='fileName'>" + file.name + "</div></br>"
@@ -182,6 +184,33 @@
                     document.getElementById("fileList").innerHTML = markUp;
                 }
             });
+        }
+    
+        var sortFiles = function(files) {
+            var selectedOption = document.getElementById("sortMenu").selectedIndex;
+            
+            // Sort by name (ascending)
+            if (selectedOption == 0) {
+                files.sort(function(a, b) {
+                    return a.name.localeCompare(b.name);
+                });
+            }
+            // Sort by name (descending)
+            else if (selectedOption == 1) {
+                files.sort(function(a, b) {
+                    return b.name.localeCompare(a.name);
+                });
+            }
+            // Sort by date (ascending)
+            else if (selectedOption == 2) {
+                // Files are already uploaded in this order
+            }
+            // Sort by date (descending)
+            else if (selectedOption == 3) {
+                files.reverse();
+            }
+            
+            return files;
         }
     
         var fileUploaded = function() {
@@ -327,6 +356,10 @@
             font-size: 16px;
         }
     
+        .smallScreen #fileUploader {
+            margin-right: -75px;
+        }
+    
         .smallScreen .deleteButton {
             padding-left: 8px;
             padding-right: 8px;
@@ -340,6 +373,12 @@
         <div id="username"></div>
     </div>
     <input type="file" id="fileUploader" onchange="fileUploaded()" style="display: none;">
+    <select id="sortMenu" onchange="loadFiles()" style="display: none;">
+        <option>Sort by name (ascending)</option>
+        <option>Sort by name (descending)</option>
+        <option selected>Sort by date (ascending)</option>
+        <option>Sort by date (descending)</option>
+    </select>
     </br></br>
     <div id="fileList"><div id="message">Login or sign up to view your files!</div></div>
 </body>
