@@ -137,9 +137,8 @@
             // Show sign up button
             document.getElementById("signUpButton").style.display = "";
             
-            // Hide file uploader
+            // Hide file uploader and file list
             document.getElementById("fileUploader").style.display = "none";
-            
             document.getElementById("fileList").innerHTML = "<div id='message'>Login or sign up to view your files!</div>";
         }
     
@@ -157,7 +156,7 @@
                     document.getElementById("fileList").innerHTML = "<div id='message'>No files found.</div>";
                 }
                 else {
-                    var markUp = ""; // Each file will be a list item
+                    var markUp = "";
                     
                     for (var i = 0; i < files.length; i++) {
                         var file = files[i];
@@ -166,7 +165,17 @@
                         markUp += "<div><div class='fileName'>" + file.name + "</div></br>"
                         markUp += "<div><b>Date Uploaded:</b> " + file.date + "</div>"
                         markUp += "<div><b>Link:</b> " + "file.link" + "</div></div>"
-                        markUp += "<div class='fileDeleteWrapper'><a href='javascript:deleteFile(" + i + ")' class='button'>Delete</a></div>"
+                    
+                        var deleteButtonText = "";
+                        
+                        if (ENV.screen.small) {
+                            deleteButtonText = "&#x2715;"; // Cross mark for delete button on small screens
+                        }
+                        else {
+                            deleteButtonText = "Delete";
+                        }
+                    
+                        markUp += "<div class='fileDeleteWrapper'><a href='javascript:deleteFile(" + i + ")' class='button deleteButton'>" + deleteButtonText + "</a></div>"
                         markUp += "</div></div>";
                     }
                     
@@ -221,7 +230,7 @@
                     console.log("Error adding file");
                 }
                 else {
-                    loadFiles();
+                    loadFiles(); // Refresh file list
                 }
             });
         }
@@ -236,7 +245,7 @@
                     console.log("Error deleting file");
                 }
                 else {
-                    loadFiles(); // Refresh fileList
+                    loadFiles(); // Refresh file list
                 }
             });
         }
@@ -316,6 +325,11 @@
         #message {
             font-weight: bold;
             font-size: 16px;
+        }
+    
+        .smallScreen .deleteButton {
+            padding-left: 8px;
+            padding-right: 8px;
         }
     </style>
 </head>
