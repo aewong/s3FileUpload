@@ -43,6 +43,67 @@ app.post("/uploadFile", function(req, res) {
     });
 });
 
+app.get("/listFiles", function(req, res) {
+    var info = req.query;
+
+    db.collection("files").find({user: info.user}).toArray(function(err, result) {
+        if (err) {
+            res.send("[]")
+        }
+        else {
+            res.send(JSON.stringify(result));
+        }
+    });
+});
+
+app.get("/addFile", function(req, res){
+    var info = req.query;
+
+    db.collection("files").findOne({link: info.link}, function(err, result) {
+        if (result) {
+            var temp = Object.keys(info);
+            var key;
+
+            for (var t = 0; t < temp.length; t++) {
+                key = temp[t];
+                result[key] = info[key];
+            }
+
+            db.collection("files").save(result, function(err2) {
+                if (err2) {
+                    res.send("0");
+                }
+                else {
+                    res.send("1");
+                }   
+            });
+        }
+        else {
+            db.collection("files").insert(info, function(err3, r3) {
+                if (err3) {
+                    res.send("0");
+                }
+                else {
+                    res.send("1");
+                }   
+            });
+        }
+    });
+});
+
+app.get("/deleteFile", function(req, res){
+    var info = req.query;
+
+    db.collection("files").remove({user: info.user, link: info.link}, function(err, result) {
+         if (err) {
+             res.send("0")
+         }
+         else {
+             res.send("1");
+         }
+     });
+});
+
 app.get("/createUser", function(req, res) {
         userLib.add(req, res, db);
         });
