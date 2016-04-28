@@ -28,10 +28,7 @@ app.get("/", function(req, res) {
 
 app.post("/uploadFile", function(req, res) {
     var fileInput = req.body.fileInput;
-    var fileName = req.files.input.name;
-    var fileType = req.files.input.type;
     var tmpPath = req.files.input.path;
-    var s3Path = "/" + fileInput;
 
     fs.readFile(tmpPath, function(err, data) {
         var params = {
@@ -43,11 +40,32 @@ app.post("/uploadFile", function(req, res) {
         };
 
         s3.upload(params, function(err, data) {
-            console.log(err);
-                  
-            res.send(data["Location"]); // Send public link to file
-            res.end("Success");
+            if (err) {
+                console.log(err);
+            }
+            else {
+                res.send(data["Location"]); // Send public link to file
+                res.end("Success");
+            }
         });
+    });
+});
+
+app.post("/deleteFile", function(req, res) {
+    var fileInput = req.body.fileInput;
+
+    var params = {
+        Bucket: "ame570",
+        Key: fileInput,
+    };
+
+    s3.deleteObject(params, function(err, data) {
+        if (err) {
+            console.log(err);
+        }
+        else {
+            res.end("Success");
+        }
     });
 });
 

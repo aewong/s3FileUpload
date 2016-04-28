@@ -259,8 +259,27 @@
             });
         }
     
+        var fileDeleted = function(link) {
+            var fd = new FormData();
+            var fileInput = link.substr(link.indexOf("s3Upload_"));
+            
+            fd.append("fileInput", fileInput);
+            
+            var xhr = new XMLHttpRequest();
+            
+            xhr.onreadystatechange = function(e) {
+                if (xhr.readyState != 4) {
+                    return;
+                }
+            };
+            
+            xhr.open("POST", "/deleteFile", true);
+            xhr.send(fd);
+        }
+    
         var deleteFile = function(index) {
-            var url = "./deleteFile?user=" + user + "&link=" + allFiles[index].link;
+            var link = allFiles[index].link;
+            var url = "./deleteFile?user=" + user + "&link=" + link;
             
             loadURL(url, function(data) {
                 var res = data;
@@ -269,6 +288,7 @@
                     console.log("Error deleting file");
                 }
                 else {
+                    fileDeleted(link);
                     loadFiles(); // Refresh file list
                 }
             });
