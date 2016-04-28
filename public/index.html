@@ -166,7 +166,7 @@
                         markUp += "<div class='content'><div class='content-table'>";
                         markUp += "<div><div class='fileName'>" + file.name + "</div></br>"
                         markUp += "<div><b>Date Uploaded:</b> " + file.date + "</div>"
-                        markUp += "<div><b>Link:</b> " + "file.link" + "</div></div>"
+                        markUp += "<div><b>Link:</b> <a href='" + file.link + "'>" + file.link + "</a></div></div>"
                     
                         var deleteButtonText = "";
                         
@@ -215,36 +215,31 @@
     
         var fileUploaded = function() {
             var file = $("#fileUploader").get(0);
-            var FR = new FileReader();
+            var fileObj = $("#fileUploader").get(0).files[0]
+            var fileName = fileObj.name;
+            var ext = fileName.substr(fileName.lastIndexOf(".") + 1);
             
-            FR.onload = function(e) {
-                var data = e.target.result;
+            var fd = new FormData();
+            var fileInput = "s3Upload_" + new Date().getTime().toString() + "." + ext;
+            
+            fd.append("fileInput", fileInput);
+            fd.append("input", file.files[0]);
+            fd.append("date", (new Date()).toString());
+            
+            var xhr = new XMLHttpRequest();
+            
+            xhr.onreadystatechange = function(e) {
+                if (xhr.readyState != 4) {
+                    return;
+                }
                 
-                var fileObj = $("#fileUploader").get(0).files[0];
-                var fileName = fileObj.name;
-                var ext = fileName.substr(fileName.lastIndexOf(".") + 1);
-
-                var fd = new FormData();
-                var fileInput = "s3Upload_" + new Date().getTime().toString() + "." + ext;
+                var link = xhr.responseText; // Get public link to file
                 
-                fd.append("fileInput", fileInput);
-                fd.append("data", data);
-                                          
-                var xhr = new XMLHttpRequest();
-                                          
-                xhr.onreadystatechange = function(e) {  
-                    if (xhr.readyState != 4) {
-                        return;
-                    }
-                };
-                                          
-                xhr.open("POST", "/uploadFile", true);
-                xhr.send(fd);
-                
-                addFile(fileInput, fileName);
+                addFile(link, fileName);
             };
-                                          
-            FR.readAsDataURL(file.files[0]);
+            
+            xhr.open("POST", "/uploadFile", true);
+            xhr.send(fd);
         }
     
         var addFile = function(link, name) {

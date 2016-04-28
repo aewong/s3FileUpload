@@ -15,6 +15,12 @@ var port = 8080;
 var db = require("./node_modules/mongoskin").db("mongodb://user:password@127.0.0.1:27017/s3FileUpload");
 
 app.use(session({secret: "This is a secret"}));
+app.use(methodOverride());
+app.use(require("connect").bodyParser());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json())
+app.use(express.static(__dirname + "/public"));
+app.use(errorHandler());
 
 app.get("/", function(req, res) {
     res.redirect("/index.html");
@@ -29,15 +35,17 @@ app.post("/uploadFile", function(req, res) {
 
     fs.readFile(tmpPath, function(err, data) {
         var params = {
-            Bucket: "alldone",
+            Bucket: "ame570",
             ACL: "public-read",
             Key: fileInput,
             Body: data,
             ServerSideEncryption: "AES256"
         };
 
-        s3.putObject(params, function(err, data) {
+        s3.upload(params, function(err, data) {
             console.log(err);
+                  
+            res.send(data["Location"]); // Send public link to file
             res.end("Success");
         });
     });
@@ -123,11 +131,6 @@ app.get("/login", function(req, res) {
 app.get("/getUser", function(req, res) {
         userLib.get(req, res, db);
         });
-
-app.use(methodOverride());
-app.use(bodyParser());
-app.use(express.static(__dirname + "/public"));
-app.use(errorHandler());
 
 console.log("Simple static server listening at http://" + hostname + ":" + port);
 app.listen(port);
